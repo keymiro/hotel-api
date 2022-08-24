@@ -15,7 +15,15 @@ class CreateHotelsTable extends Migration
     {
         Schema::create('hotels', function (Blueprint $table) {
             $table->id();
-            
+            $table->string('name');
+            $table->string('city');
+            $table->string('address');
+            $table->string('nit');
+            $table->string('max_rooms');
+
+            $table->unsignedBigInteger('user_created_id')->comment('Id del usuario creador del registro');
+            $table->foreign('user_created_id')->references('id')->on('users');
+
             $table->timestamps();
         });
     }
