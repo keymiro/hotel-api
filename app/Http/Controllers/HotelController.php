@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Hotel;
-use Illuminate\Validation\Rule;
 use Validator;
+use App\Models\Room;
+use App\Models\Hotel;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class HotelController extends Controller
 {
@@ -16,8 +18,15 @@ class HotelController extends Controller
      */
     public function index()
     {
-       $hotels = Hotel::all();
-       return response()->json(['hoteles'=>$hotels]);
+        $hotel = Hotel::all();
+       $hotels = DB::table('hotels')
+                        ->select('hotels.id','hotels.name','hotels.city','hotels.address','hotels.nit','hotels.max_rooms',
+                        DB::raw('count(rooms.id) as has_total_rooms'))
+                        ->leftJoin('rooms','rooms.hotel_id','=','hotels.id')
+                        ->groupBy('hotels.id')
+                        ->get();
+
+       return response()->json(['Hoteles'=>$hotels]);
     }
 
     /**

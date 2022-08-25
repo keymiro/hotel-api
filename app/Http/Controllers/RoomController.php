@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Hotel;
-use App\Models\Room;
-use App\Models\TypeRoom;
 use Validator;
+use App\Models\Room;
+use App\Models\Hotel;
+use App\Models\TypeRoom;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class RoomController extends Controller
 {
@@ -19,8 +20,14 @@ class RoomController extends Controller
     public function hotelWithRooms($id)
     {
         $hotelWithRooms = Room::where('hotel_id',$id)->get();
-        $hotel= Hotel::where('id',$id)->get();
-
+        $hotel = DB::table('hotels')
+                        ->select('hotels.id','hotels.name','hotels.city','hotels.address','hotels.nit','hotels.max_rooms',
+                        DB::raw('count(rooms.id) as has_total_rooms'))
+                        ->join('rooms','rooms.hotel_id','=','hotels.id')
+                        ->where('hotels.id',$id)
+                        ->groupBy('hotels.id')
+                        ->get();
+                        
         return response()->json(
             [
                 'hotel'=>$hotel,
