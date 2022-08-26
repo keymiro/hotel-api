@@ -147,7 +147,7 @@ class RoomController extends Controller
                                   'string',
                                   'max:255',
                                  ],
-            'amount'            => 'required|numeric|between:0,999.999',
+            'amount'            => 'required|numeric',
             'type_room_id'      => 'required|exists:rooms,id|max:255',
             'hotel_id'          => 'required|exists:hotels,id|max:255',
             'user_created_id'   => 'required|exists:users,id|max:255',
