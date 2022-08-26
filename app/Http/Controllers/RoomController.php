@@ -19,15 +19,21 @@ class RoomController extends Controller
      */
     public function hotelWithRooms($id)
     {
-        $hotelWithRooms = Room::where('hotel_id',$id)->get();
+        // $hotelWithRooms = Room::where('hotel_id',$id)->get();
+        $hotelWithRooms  = DB::table('rooms')
+                                ->select('rooms.id','rooms.amount','rooms.number','rooms.accommodations','rooms.type_room_id','type_rooms.name as type_rooms', 'user_created_id')
+                                ->join('type_rooms','type_rooms.id','=','rooms.type_room_id')
+                                ->where('rooms.hotel_id',$id)
+                                ->groupBy('rooms.id','type_rooms.name')
+                                ->get();
         $hotel = DB::table('hotels')
                         ->select('hotels.id','hotels.name','hotels.city','hotels.address','hotels.nit','hotels.max_rooms',
                         DB::raw('count(rooms.id) as has_total_rooms'))
-                        ->join('rooms','rooms.hotel_id','=','hotels.id')
+                        ->leftJoin('rooms','rooms.hotel_id','=','hotels.id')
                         ->where('hotels.id',$id)
                         ->groupBy('hotels.id')
                         ->get();
-                        
+
         return response()->json(
             [
                 'hotel'=>$hotel,
@@ -53,13 +59,19 @@ class RoomController extends Controller
         $hotel=Hotel::find($request->hotel_id);
         $roomCount =Room::where('hotel_id',$request->hotel_id)->count('hotel_id');
 
+        $repeatedRoom =Room::where('hotel_id',$request->hotel_id)->where('number',$request->number)->first();
+
+        if ($repeatedRoom) {
+            return response()->json(['message'=>'repeated room in the hotel']);
+        }
+
         if ($hotel->max_rooms <= $roomCount) {
             return response()->json(['message'=>'maximum number of rooms exceeded']);
         }
 
         $room = Room::create($request->all());
 
-        return response()->json(['message'=>'register updated','room'=>$room]);
+        return response()->json(['message'=>'register created','room'=>$room]);
     }
 
     /**
@@ -70,9 +82,14 @@ class RoomController extends Controller
      */
     public function show($id)
     {
-        $room = Room::find($id);
+        $room  = DB::table('rooms')
+        ->select('rooms.id','rooms.amount','rooms.number','rooms.accommodations','rooms.type_room_id','type_rooms.name as type_rooms', 'rooms.user_created_id')
+        ->join('type_rooms','type_rooms.id','=','rooms.type_room_id')
+        ->where('rooms.id',$id)
+        ->groupBy('rooms.id','type_rooms.name')
+        ->get();
 
-        $typeRoom = TypeRoom::find($room->type_room_id);
+        $typeRoom = TypeRoom::find($room[0]->type_room_id);
 
         $accommodations = json_decode($typeRoom->accommodations);
 
@@ -98,6 +115,12 @@ class RoomController extends Controller
         }
 
         $room = Room::find($id);
+
+        $repeatedRoom =Room::where('hotel_id',$request->hotel_id)->where('number',$request->number)->first();
+
+        if ($repeatedRoom) {
+            return response()->json(['message'=>'repeated room in the hotel']);
+        }
 
         if (empty($room)) {
             return response()->json(['message'=>'register not found']);
@@ -129,7 +152,6 @@ class RoomController extends Controller
                                   'required',
                                   'string',
                                   'max:255',
-                                  Rule::unique('rooms')->ignore($request->route('id'))
                                  ],
             'amount'            => 'required|numeric|between:0,999.999',
             'type_room_id'      => 'required|exists:rooms,id|max:255',
