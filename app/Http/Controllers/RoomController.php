@@ -116,16 +116,10 @@ class RoomController extends Controller
 
         $room = Room::find($id);
 
-        $repeatedRoom =Room::where('hotel_id',$request->hotel_id)->where('number',$request->number)->first();
-
-        if ($repeatedRoom) {
-            return response()->json(['message'=>'repeated room in the hotel']);
-        }
 
         if (empty($room)) {
             return response()->json(['message'=>'register not found']);
         }
-
         $room->update($request->all());
 
         return response()->json(['message'=>'register updated','room'=>$room]);
