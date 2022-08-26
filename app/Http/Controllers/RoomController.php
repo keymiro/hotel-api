@@ -53,7 +53,7 @@ class RoomController extends Controller
         $validator = $this->validation($request);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors());
+            return response()->json(['message'=>$validator->errors()]);
         }
 
         $hotel=Hotel::find($request->hotel_id);
@@ -111,7 +111,7 @@ class RoomController extends Controller
         $validator = $this->validation($request);
 
         if ($validator->fails()) {
-            return response()->json($validator->errors());
+            return response()->json(['message'=>$validator->errors()]);
         }
 
         $room = Room::find($id);
