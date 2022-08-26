@@ -83,7 +83,7 @@ class RoomController extends Controller
     public function show($id)
     {
         $room  = DB::table('rooms')
-        ->select('rooms.id','rooms.amount','rooms.number','rooms.accommodations','rooms.type_room_id','type_rooms.name as type_rooms', 'rooms.user_created_id')
+        ->select('rooms.id','rooms.amount','rooms.number','rooms.accommodations','rooms.type_room_id','type_rooms.name as type_rooms', 'rooms.user_created_id','rooms.hotel_id')
         ->join('type_rooms','type_rooms.id','=','rooms.type_room_id')
         ->where('rooms.id',$id)
         ->groupBy('rooms.id','type_rooms.name')
